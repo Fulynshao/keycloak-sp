@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  keycloak_trabalho:
+    image: quay.io/keycloak/keycloak:26.0.4
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres_keycloak_trabalho
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_PASSWORD: password
+      KC_DB_USERNAME: keycloak
+      KC_DB_SCHEMA: public
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres_keycloak_trabalho
+    volumes:
+      - ./keycloak-config:/opt/keycloak/data/import
+    networks:
+      - keycloak_trabalho_dev_network
+
+  postgres_keycloak_trabalho:
+    image: postgres:14.2
+    command: postgres -c 'max_connections=200'
+    volumes:
+      - pgdados_keycloak_trabalho:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    networks:
+      - keycloak_trabalho_dev_network
+
+networks:
+  keycloak_trabalho_dev_network:
+    driver: bridge
+
+volumes:
+  pgdados_keycloak_trabalho:
